@@ -1,110 +1,144 @@
 ﻿<!DOCTYPE html>
-	<head>
-<meta charset="utf-8">
-<title> Adding Kendo UI to a Web Page </title>
+<head>
+    <meta charset="utf-8">
+    <title> Adding Kendo UI to a Web Page </title>
 
-<link href="content/kendo.common.min.css" rel="stylesheet" type="text/css"/>
-<link href="content/kendo.default.min.css" rel="stylesheet" type="text/css"/>
-<link rel="stylesheet" href="content/kendo.silver.min.css"/>
-<script src="scripts/jquery.min.js" type="text/javascript"></script>
-<script src="scripts/kendo.web.min.js" type="text/javascript"></script>
+    <link href="content/kendo.common.min.css" rel="stylesheet" type="text/css" />
+    <link href="content/kendo.default.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="content/kendo.silver.min.css" />
+    <script src="scripts/jquery.min.js" type="text/javascript"></script>
+    <script src="scripts/kendo.web.min.js" type="text/javascript"></script>
 
-<!--<script id="event-template" type="text/x-kendo-template">
-<div>Title: #: title # </div>
-    <div>Attendees:
-          # for (var i = 0; i < resources.length; i++) { #
-                  #= resources[i].text #
-                        # } #
-      </div>
-</script>-->
-<script id="editor" type="text/x-kendo-template">
-    <h3>Edit meeting</h3>
-    <p>
-        <label>User: <input name="user" /></label>
-    </p>
-    <p>
-        <label>Project: <input data-role="dropdownlist" data-text-field="text" data-value-field="value" name="project" data-bind="value:selected, source: project"/></label>
-    </p>
-    <p>
-        <label>Start: <input data-role="datetimepicker" name="start" /></label>
-    </p>
-    <p>
-        <label>End: <input data-role="datetimepicker" name="end" /></label>
-    </p>
-    <p>
-        <label>Topic: <input name="topic" /></label>
-    </p>
-    <p>
-        <label>Description: </label>
-        <textarea name="description" />
-    </p>
-</script>
-<script type="text/javascript">
-		    $(document).ready(function(){
-		        var datasource = new kendo.data.SchedulerDataSource({
-		            transport: {
-		                read: {
-		                    url: 'http://localhost:57804/api/Project',
-		                    type: 'get',
-		                },
-		                update: {
-                            url:'http://localhost:57804/api/Project',
-                            type:'put',
-		                }
-		            },
-		            schema: {
-		                model: {
-		                    id: 'taskId',
-		                    fields: {
-                                title:{from:'Title'},
-                                taskId:{from:"Id",type:'number'},
-		                        user:{from: 'User'},
-		                        project: { from: 'Projects' },
-		                        start:{type:'date',from:'StartTime'},
-                                end:{type:'date',from:'EndTime'},
-                                topic: { from: 'Topic' },
-                                description:{from:"Description"},
+    <script id="event-template" type="text/x-kendo-template">
+        <div class="k-event-template">User: #:user# </div>
+        <div class="k-event-template">Project: #: getProjectNameById(project)#</div>
+    </script>
 
-		                    }
+    <script id="editor" type="text/x-kendo-template">
+        <h3>Edit meeting </h3>
+        <p>
+            <label>Title: <input name="title" /></label>
+        </p>
+        <p>
+            <label>User: <input name="user" /></label>
+        </p>
+        <p>
+            <label>
+                Project: <input data-role="dropdownlist" data-text-field="text" data-value-field="value" name="project" data-source="{ data:getProjectsDs()}" />
+            </label>
+        </p>
+        <p>
+            <label>Start: <input data-role="datetimepicker" name="start" /></label>
+        </p>
+        <p>
+            <label>End: <input data-role="datetimepicker" name="end" /></label>
+        </p>
+        <p>
+            <label>Topic: <input name="topic" /></label>
+        </p>
+        <p>
+            <label>Description: </label>
+            <textarea name="description" />
+        </p>
+    </script>
 
-		                }
-                    
-		            }
+    <script type="text/javascript">
+        var pds = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: 'http://localhost:57804/api/ProjectList',
+                    type: 'get',
+                },
+            },
+
+        });
+        pds.read();
+        function getProjectsDs() {
+            return pds.data();
+        }
+        function getProject(index) {
+            return pds.data().find(function (project) {
+                return project.value == index;
+            });
+        }
+
+        function getProjectNameById(id) {
+            var project = getProject(id);
+            if (project)
+                return project.text
+            return '';
+
+        }
+        $(document).ready(function () {
+
+            var datasource = new kendo.data.SchedulerDataSource({
+                transport: {
+                    parameterMap: function (options) {
+                        if (options && options.StartTime && options.EndTime) {
+                            options.EndTime = options.EndTime.toUTCString();
+                            options.StartTime = options.StartTime.toUTCString();
+                        }
+                        return options;
+                    },
+                    read: {
+                        url: 'http://localhost:57804/api/Project',
+                        type: 'get',
+                    },
+                    update: {
+                        url: 'http://localhost:57804/api/Project',
+                        type: 'put',
+                    },
+                    create: {
+                        url: 'http://localhost:57804/api/Project',
+                        type: 'post',
+                    },
+                    destroy: {
+
+                        url: 'http://localhost:57804/api/Project',
+                        type: 'delete'
+                    }
+                },
+
+                schema: {
+                    model: {
+                        id: 'taskId',
+                        User: 'user',
+                        fields: {
+                            title: { from: 'Title' },
+                            taskId: { from: "Id", type: 'number' },
+                            user: { from: 'User' },
+                            project: { from: 'Project' },
+                            start: { type: 'date', from: 'StartTime' },
+                            end: { type: 'date', from: 'EndTime' },
+                            topic: { from: 'Topic' },
+                            description: { from: "Description" },
+
+                        }
 
 
-		        });
-                $('#sch').kendoScheduler({
-                    //date: new Date("2013/6/6"),
-                    allDaySlot:false,
-                      //allDayEventTemplate: $("#event-template").html(),
-                       // eventTemplate:$("#event-template").html(),
-                        editable: {
-                        template: $("#editor").html()
-                        },
-                    dataSource:datasource,
-                    //dataSource: [
-                    //    {
-                    //        title:'title',
-                    //        id: 1,
-                    //        start: new Date("2013/6/6 08:00 AM"),
-                    //        end: new Date("2013/6/6 09:00 AM"),
-                    //        user: "user",
-                    //        selected:1,
-                    //        project: [
-                    //            {text:'project1',value:'1'},
-                    //            {text:'project2',value:'2'},
-                    //        ],
-                    //        topic: "Interview",
-                    //        Description:"this is description"
-                    //    }
-                    //],
-                });
-		    });
-		</script>
+                    }
+
+                }
+
+
+            });
+            $('#sch').kendoScheduler({
+                allDaySlot: false,
+                eventTemplate: $("#event-template").html(),
+                editable: {
+                    template: $("#editor").html()
+                },
+                views:['day',{type:'week',selected:true},'month'],
+                dataSource: datasource,
+            });
+
+        });
+    </script>
 
 </head>
-	<body>
-        <div id="sch"></div>
+<body>
+    <div id="sch"></div>
 
-	</body>
+</body>
 </html>
+
