@@ -12,15 +12,23 @@ using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
-    public class ProjectListController : ApiController
+    public class UserListController : ApiController
     {
-                   static ProjectModel[] l1 =
+        static UserModel[] users =
         {
-            new ProjectModel (){text="CRM",value=new       Guid("{01f3b166-9016-e811-a834-000d3a13a9c6}" )},
-            new ProjectModel (){text="resturant",value=new Guid("{BD5DC65A-9016-E811-A834-000D3A13A9C6}" )},
+            new UserModel()
+            {
+                text="sudqi",
+                value =new Guid("f63b87c5-213c-4e48-ac6f-8b7724c99953"),
+            },
+            new UserModel()
+            {
+                text="randa",value=new Guid("f63b87c5-213c-4e48-ac6f-8b7724c99954"),
+            }
+
         };
-        // GET: api/ProjectList
-        public IEnumerable<ProjectModel> Get()
+        // GET: api/UserList
+        public IEnumerable<UserModel> Get()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
@@ -29,12 +37,14 @@ namespace WebApplication1.Controllers
             CrmServiceClient conn = new CrmServiceClient(connString);
             IOrganizationService _orgService = (IOrganizationService)conn.OrganizationWebProxyClient != null ? (IOrganizationService)conn.OrganizationWebProxyClient : (IOrganizationService)conn.OrganizationServiceProxy;
             OrganizationServiceContext context;
+            //Guid userid = ((WhoAmIResponse)_orgService.Execute(new WhoAmIRequest())).UserId;
             try
             {
                 context = new OrganizationServiceContext(_orgService);
-                var tasks = context.CreateQuery("schedule_project");
-            var t = tasks.Select(x => ViewModelFactory.createProjectModel(x)).ToList();
-                return t;
+                var users = context.CreateQuery("systemuser").
+                    Where(c => (c.GetAttributeValue<bool>("isdisabled") == false))
+                    .Select(c=>ViewModelFactory.createUserModel(c));
+                return users;
             }
             catch(Exception ex)
             {
@@ -43,26 +53,26 @@ namespace WebApplication1.Controllers
             }
 
 
-            return l1;
+            return users;
         }
 
-        // GET: api/ProjectList/5
+        // GET: api/UserList/5
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST: api/ProjectList
+        // POST: api/UserList
         public void Post([FromBody]string value)
         {
         }
 
-        // PUT: api/ProjectList/5
+        // PUT: api/UserList/5
         public void Put(int id, [FromBody]string value)
         {
         }
 
-        // DELETE: api/ProjectList/5
+        // DELETE: api/UserList/5
         public void Delete(int id)
         {
         }

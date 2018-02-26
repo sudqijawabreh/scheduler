@@ -10,21 +10,24 @@
     <script src="scripts/kendo.web.min.js" type="text/javascript"></script>
 
     <script id="event-template" type="text/x-kendo-template">
-        <div class="k-event-template">User: #:user# </div>
-        <div class="k-event-template">Project: #: getProjectNameById(project)#</div>
+        <div class="k-event-template">User: #:getUserName(userId)# </div>
+        <div class="k-event-template">Project: #: getProjectNameById(projectId)#</div>
     </script>
 
     <script id="editor" type="text/x-kendo-template">
         <h3>Edit meeting </h3>
         <p>
-            <label>Title: <input name="title" /></label>
-        </p>
-        <p>
-            <label>User: <input name="user" /></label>
+            <label>Topic: <input name="topic" /></label>
         </p>
         <p>
             <label>
-                Project: <input data-role="dropdownlist" data-text-field="text" data-value-field="value" name="project" data-source="{ data:getProjectsDs()}" />
+                User: <input data-role="dropdownlist" data-text-field="text" data-value-field="value" name="userId" data-source="{ data:getUsersDs()}" />
+            </label>
+            <!--<label>User: <input name="user.Name"  /></label>-->
+        </p>
+        <p>
+            <label>
+                Project: <input data-role="dropdownlist" data-text-field="text" data-value-field="value" name="projectId" data-source="{ data:getProjectsDs()}" />
             </label>
         </p>
         <p>
@@ -32,9 +35,6 @@
         </p>
         <p>
             <label>End: <input data-role="datetimepicker" name="end" /></label>
-        </p>
-        <p>
-            <label>Topic: <input name="topic" /></label>
         </p>
         <p>
             <label>Description: </label>
@@ -52,9 +52,27 @@
             },
 
         });
+        var usersDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: 'http://localhost:57804/api/UserList',
+                    type: 'get',
+                },
+            },
+        })
+        usersDataSource.read();
         pds.read();
+        function getUsersDs() {
+            return usersDataSource.data();
+        }
         function getProjectsDs() {
             return pds.data();
+        }
+        function getUserName(userId) {
+            var user= usersDataSource.data().find(function (user) {
+                return user.value == userId;
+            });
+            return user ? user.text : '';
         }
         function getProject(index) {
             return pds.data().find(function (project) {
@@ -81,20 +99,20 @@
                         return options;
                     },
                     read: {
-                        url: 'http://localhost:57804/api/Project',
+                        url: 'http://localhost:57804/api/Task',
                         type: 'get',
                     },
                     update: {
-                        url: 'http://localhost:57804/api/Project',
+                        url: 'http://localhost:57804/api/Task',
                         type: 'put',
                     },
                     create: {
-                        url: 'http://localhost:57804/api/Project',
+                        url: 'http://localhost:57804/api/Task',
                         type: 'post',
                     },
                     destroy: {
 
-                        url: 'http://localhost:57804/api/Project',
+                        url: 'http://localhost:57804/api/Task',
                         type: 'delete'
                     }
                 },
@@ -104,10 +122,9 @@
                         id: 'taskId',
                         User: 'user',
                         fields: {
-                            title: { from: 'Title' },
-                            taskId: { from: "Id", type: 'number' },
-                            user: { from: 'User' },
-                            project: { from: 'Project' },
+                            taskId: { from: "Id",type:"string"},
+                            userId: { from: 'UserId' },
+                            projectId: { from: 'ProjectId' },
                             start: { type: 'date', from: 'StartTime' },
                             end: { type: 'date', from: 'EndTime' },
                             topic: { from: 'Topic' },

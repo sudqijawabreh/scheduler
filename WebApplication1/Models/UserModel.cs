@@ -5,9 +5,9 @@ using System.Web;
 
 namespace WebApplication1.Models
 {
-    public class ProjectListModel
+    public class UserModel
     {
+        public Guid value { get; set; }
         public string text { get; set; }
-        public string value { get; set; }
     }
 }

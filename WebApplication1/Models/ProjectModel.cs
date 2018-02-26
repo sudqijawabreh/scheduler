@@ -7,14 +7,7 @@ namespace WebApplication1.Models
 {
     public class ProjectModel
     {
-        public int Id { get; set; }
-        public string Title{ get; set; }
-        public string User { get; set; }
-        public int Project { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public string Topic { get; set; }
-        public string Description { get; set; }
-        
+        public Guid value { get; set; }
+        public string text{ get; set; }
     }
 }
